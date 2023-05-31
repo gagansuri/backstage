@@ -16,7 +16,11 @@
 
 import React, { ReactNode } from 'react';
 import './MuiClassNameSetup';
-import { ThemeProvider } from '@material-ui/core/styles';
+import {
+  ThemeProvider,
+  StylesProvider,
+  createGenerateClassName,
+} from '@material-ui/core/styles';
 import {
   StyledEngineProvider,
   ThemeProvider as Mui5Provider,
@@ -34,6 +38,11 @@ export interface UnifiedThemeProviderProps {
   theme: UnifiedTheme;
   noCssBaseline?: boolean;
 }
+
+// Without this the generated JSS class names will overlap across v4 and v5, and we'll get styles being mixed up.
+const generateV4ClassName = createGenerateClassName({
+  productionPrefix: 'jss4-',
+});
 
 /**
  * Provides themes for all MUI versions supported by the provided unified theme.
@@ -61,7 +70,11 @@ export function UnifiedThemeProvider(
   );
 
   if (v4Theme) {
-    result = <ThemeProvider theme={v4Theme}>{result}</ThemeProvider>;
+    result = (
+      <StylesProvider generateClassName={generateV4ClassName}>
+        <ThemeProvider theme={v4Theme}>{result}</ThemeProvider>
+      </StylesProvider>
+    );
   }
 
   if (v5Theme) {
